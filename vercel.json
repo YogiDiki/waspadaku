@@ -1,12 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "echo 'No build required'",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/public/$1" }
-  ],
   "headers": [
     {
-      "source": "/public/sw.js",
+      "source": "/sw.js",
       "headers": [
         {
           "key": "Service-Worker-Allowed",
@@ -19,7 +15,7 @@
       ]
     },
     {
-      "source": "/public/firebase-messaging-sw.js",
+      "source": "/firebase-messaging-sw.js",
       "headers": [
         {
           "key": "Service-Worker-Allowed",
