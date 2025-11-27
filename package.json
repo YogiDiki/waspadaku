@@ -1,0 +1,33 @@
+{
+  "name": "waspadaku",
+  "version": "1.0.0",
+  "description": "Sistem Notifikasi Bencana Berbasis PWA dengan integrasi PetaBencana.id dan Firebase Cloud Messaging",
+  "main": "public/index.html",
+  "scripts": {
+    "dev": "npx http-server public -p 8080 -c-1",
+    "start": "npx http-server public -p 8080",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "pwa",
+    "disaster",
+    "notification",
+    "bencana",
+    "petabencana",
+    "firebase",
+    "fcm"
+  ],
+  "author": "WaspadaKu Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YogiDiki/waspadaku.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YogiDiki/waspadaku/issues"
+  },
+  "homepage": "https://github.com/YogiDiki/waspadaku#readme",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

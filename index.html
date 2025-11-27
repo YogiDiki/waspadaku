@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FF0000">
+    <title>WaspadaKu - Sistem Notifikasi Bencana</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/icons/icon-192.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        #map { height: 400px; width: 100%; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #FF0000; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-100" x-data="waspadaApp()">
+    
+    <!-- Offline Alert Banner -->
+    <div x-show="!isOnline" class="bg-yellow-500 text-white px-4 py-3 text-center">
+        <p class="font-semibold">⚠️ Anda sedang offline. Menampilkan data terakhir yang tersedia.</p>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-red-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                    </svg>
+                    <h1 class="text-2xl font-bold">WaspadaKu</h1>
+                </div>
+                <button @click="requestNotificationPermission()" class="bg-white text-red-600 px-3 py-2 rounded-lg text-sm font-semibold">
+                    🔔 Aktifkan Notifikasi
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Menu -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex overflow-x-auto space-x-2 py-3">
+                <button @click="currentPage = 'dashboard'" 
+                        :class="currentPage === 'dashboard' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'"
+                        class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                    📊 Dashboard
+                </button>
+                <button @click="currentPage = 'map'" 
+                        :class="currentPage === 'map' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'"
+                        class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                    🗺️ Peta Live
+                </button>
+                <button @click="currentPage = 'notifications'" 
+                        :class="currentPage === 'notifications' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'"
+                        class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                    🔔 Notifikasi
+                </button>
+                <button @click="currentPage = 'evakuasi'" 
+                        :class="currentPage === 'evakuasi' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'"
+                        class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                    🏥 Evakuasi
+                </button>
+                <button @click="currentPage = 'laporan'" 
+                        :class="currentPage === 'laporan' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'"
+                        class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                    📝 Laporan
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        
+        <!-- Loader -->
+        <div x-show="loading" class="flex justify-center items-center py-12">
+            <div class="loader"></div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div x-show="currentPage === 'dashboard' && !loading">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Status Bencana Terkini</h2>
+            
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-blue-500 text-white p-4 rounded-lg shadow">
+                    <div class="text-3xl font-bold" x-text="stats.banjir"></div>
+                    <div class="text-sm">Banjir</div>
+                </div>
+                <div class="bg-red-500 text-white p-4 rounded-lg shadow">
+                    <div class="text-3xl font-bold" x-text="stats.gempa"></div>
+                    <div class="text-sm">Gempa</div>
+                </div>
+                <div class="bg-orange-500 text-white p-4 rounded-lg shadow">
+                    <div class="text-3xl font-bold" x-text="stats.longsor"></div>
+                    <div class="text-sm">Longsor</div>
+                </div>
+                <div class="bg-yellow-600 text-white p-4 rounded-lg shadow">
+                    <div class="text-3xl font-bold" x-text="stats.karhutla"></div>
+                    <div class="text-sm">Karhutla</div>
+                </div>
+            </div>
+
+            <!-- Latest Disasters List -->
+            <div class="space-y-4">
+                <template x-for="disaster in disasters" :key="disaster.id">
+                    <div class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition">
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0">
+                                <div :class="getDisasterColor(disaster.hazard)" 
+                                     class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl">
+                                    <span x-text="getDisasterIcon(disaster.hazard)"></span>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg capitalize" x-text="disaster.hazard"></h3>
+                                <p class="text-gray-600 text-sm" x-text="disaster.description || 'Tidak ada deskripsi'"></p>
+                                <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                                    <span>📍 <span x-text="disaster.location || 'Lokasi tidak diketahui'"></span></span>
+                                    <span>🕐 <span x-text="formatTime(disaster.created_at)"></span></span>
+                                </div>
+                                <div x-show="disaster.water_depth" class="mt-2">
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                                        Kedalaman: <span x-text="disaster.water_depth"></span> cm
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Map Page -->
+        <div x-show="currentPage === 'map' && !loading">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Peta Bencana Realtime</h2>
+            <div id="map" class="rounded-lg shadow-lg"></div>
+            <div class="mt-4 bg-white p-4 rounded-lg shadow">
+                <h3 class="font-bold mb-2">Legenda:</h3>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
+                        <span>Banjir</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-red-500 rounded-full"></div>
+                        <span>Gempa</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-orange-500 rounded-full"></div>
+                        <span>Longsor</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-yellow-600 rounded-full"></div>
+                        <span>Karhutla</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+                        <span>Posko BPBD</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Page -->
+        <div x-show="currentPage === 'notifications' && !loading">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Riwayat Notifikasi</h2>
+            <div class="space-y-3">
+                <template x-for="notif in notifications" :key="notif.id">
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <h3 class="font-bold" x-text="notif.title"></h3>
+                        <p class="text-gray-600 text-sm mt-1" x-text="notif.body"></p>
+                        <p class="text-gray-400 text-xs mt-2" x-text="notif.time"></p>
+                    </div>
+                </template>
+                <div x-show="notifications.length === 0" class="text-center text-gray-500 py-8">
+                    Belum ada notifikasi
+                </div>
+            </div>
+        </div>
+
+        <!-- Evacuation Page -->
+        <div x-show="currentPage === 'evakuasi' && !loading">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Info Evakuasi & BPBD</h2>
+            <div class="space-y-4">
+                <template x-for="evac in evacPoints" :key="evac.id">
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <h3 class="font-bold text-lg" x-text="evac.name"></h3>
+                        <p class="text-gray-600 text-sm" x-text="evac.address"></p>
+                        <div class="mt-3 space-y-1 text-sm">
+                            <div class="flex items-center space-x-2">
+                                <span>📞</span>
+                                <a :href="'tel:' + evac.phone" class="text-blue-600" x-text="evac.phone"></a>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span>👥</span>
+                                <span>Kapasitas: <span x-text="evac.capacity"></span> orang</span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Report Page -->
+        <div x-show="currentPage === 'laporan' && !loading">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Laporan Warga</h2>
+            
+            <!-- Status Buttons -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <button @click="sendStatus('aman')" 
+                        class="bg-green-500 text-white py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-green-600 transition">
+                    ✅ Saya Aman
+                </button>
+                <button @click="sendStatus('bantuan')" 
+                        class="bg-red-500 text-white py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-red-600 transition">
+                    🆘 Butuh Bantuan
+                </button>
+            </div>
+
+            <!-- Report Form -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-bold text-lg mb-4">Laporkan Bencana</h3>
+                <form @submit.prevent="submitReport()">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Jenis Bencana</label>
+                            <select x-model="reportForm.hazard" class="w-full border rounded-lg px-4 py-2">
+                                <option value="banjir">Banjir</option>
+                                <option value="gempa">Gempa</option>
+                                <option value="longsor">Longsor</option>
+                                <option value="karhutla">Kebakaran Hutan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Deskripsi</label>
+                            <textarea x-model="reportForm.description" 
+                                      class="w-full border rounded-lg px-4 py-2" 
+                                      rows="3" 
+                                      placeholder="Jelaskan situasi yang terjadi..."></textarea>
+                        </div>
+                        <button type="submit" 
+                                class="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition">
+                            📤 Kirim Laporan
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- My Reports -->
+            <div class="mt-6">
+                <h3 class="font-bold text-lg mb-3">Laporan Saya</h3>
+                <div class="space-y-3">
+                    <template x-for="report in myReports" :key="report.id">
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold capitalize" x-text="report.hazard"></h4>
+                                    <p class="text-sm text-gray-600" x-text="report.description"></p>
+                                    <p class="text-xs text-gray-400 mt-2" x-text="report.time"></p>
+                                </div>
+                                <span :class="report.synced ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'" 
+                                      class="px-2 py-1 rounded text-xs">
+                                    <span x-text="report.synced ? '✓ Terkirim' : '⏳ Pending'"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="myReports.length === 0" class="text-center text-gray-500 py-8">
+                        Belum ada laporan
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Emergency Modal -->
+    <div x-show="showEmergencyModal" 
+         x-cloak
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+         @click.self="showEmergencyModal = false">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 class="text-2xl font-bold text-red-600 mb-4">⚠️ Peringatan Darurat!</h2>
+            <p class="text-gray-700 mb-6" x-text="emergencyMessage"></p>
+            <button @click="showEmergencyModal = false" 
+                    class="w-full bg-red-600 text-white py-3 rounded-lg font-bold">
+                Saya Mengerti
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white text-center py-6 mt-12">
+        <p class="text-sm">© 2025 WaspadaKu - Sistem Notifikasi Bencana</p>
+        <p class="text-xs mt-2 text-gray-400">Data dari PetaBencana.id & BPBD</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.error('Service Worker registration failed', err));
+        }
+    </script>
+</body>
+</html>

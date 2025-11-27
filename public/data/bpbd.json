@@ -1,0 +1,321 @@
+{
+  "last_updated": "2025-01-15T10:00:00Z",
+  "region": "DKI Jakarta",
+  "emergency_contacts": [
+    {
+      "id": 1,
+      "name": "BPBD DKI Jakarta",
+      "phone": "021-1500025",
+      "whatsapp": "08111950025",
+      "email": "bpbddki@jakarta.go.id",
+      "available_24h": true
+    },
+    {
+      "id": 2,
+      "name": "Basarnas Jakarta",
+      "phone": "115",
+      "whatsapp": "081388111115",
+      "email": "basarnasjakarta@basarnas.go.id",
+      "available_24h": true
+    },
+    {
+      "id": 3,
+      "name": "PMI Jakarta",
+      "phone": "021-7992325",
+      "whatsapp": "081210000210",
+      "email": "pmi.jakarta@pmi.or.id",
+      "available_24h": true
+    },
+    {
+      "id": 4,
+      "name": "Polda Metro Jaya",
+      "phone": "110",
+      "available_24h": true
+    },
+    {
+      "id": 5,
+      "name": "Dinas Pemadam Kebakaran",
+      "phone": "113",
+      "available_24h": true
+    }
+  ],
+  "evacuation_points": [
+    {
+      "id": 1,
+      "name": "GOR Sunter",
+      "type": "Sport Hall",
+      "address": "Jl. Danau Sunter Utara, Sunter Agung, Jakarta Utara",
+      "capacity": 1500,
+      "facilities": ["toilet", "kitchen", "medical", "parking"],
+      "lat": -6.1428,
+      "lng": 106.8701,
+      "phone": "021-65306789",
+      "status": "active"
+    },
+    {
+      "id": 2,
+      "name": "GOR Ciracas",
+      "type": "Sport Hall",
+      "address": "Jl. Raya Bogor KM 23, Ciracas, Jakarta Timur",
+      "capacity": 1000,
+      "facilities": ["toilet", "kitchen", "medical", "parking", "generator"],
+      "lat": -6.3247,
+      "lng": 106.8753,
+      "phone": "021-8710537",
+      "status": "active"
+    },
+    {
+      "id": 3,
+      "name": "Balai Warga Kelapa Gading",
+      "type": "Community Center",
+      "address": "Jl. Boulevard Barat, Kelapa Gading, Jakarta Utara",
+      "capacity": 300,
+      "facilities": ["toilet", "kitchen", "parking"],
+      "lat": -6.1579,
+      "lng": 106.8991,
+      "phone": "021-4585233",
+      "status": "active"
+    },
+    {
+      "id": 4,
+      "name": "Posko BPBD Jakarta Pusat",
+      "type": "BPBD Post",
+      "address": "Jl. Letjen Suprapto, Cempaka Putih, Jakarta Pusat",
+      "capacity": 500,
+      "facilities": ["toilet", "medical", "kitchen", "communication"],
+      "lat": -6.1751,
+      "lng": 106.8650,
+      "phone": "021-4892828",
+      "status": "active"
+    },
+    {
+      "id": 5,
+      "name": "Balai Kota Jakarta",
+      "type": "Government Building",
+      "address": "Jl. Medan Merdeka Selatan No. 8-9, Jakarta Pusat",
+      "capacity": 800,
+      "facilities": ["toilet", "medical", "kitchen", "parking", "generator"],
+      "lat": -6.1745,
+      "lng": 106.8227,
+      "phone": "021-3841455",
+      "status": "active"
+    },
+    {
+      "id": 6,
+      "name": "GOR Otista",
+      "type": "Sport Hall",
+      "address": "Jl. Otto Iskandardinata, Jatinegara, Jakarta Timur",
+      "capacity": 700,
+      "facilities": ["toilet", "kitchen", "medical", "parking"],
+      "lat": -6.2249,
+      "lng": 106.8732,
+      "phone": "021-8510845",
+      "status": "active"
+    },
+    {
+      "id": 7,
+      "name": "Lapangan IRTI Monas",
+      "type": "Open Field",
+      "address": "Jl. Medan Merdeka Barat, Gambir, Jakarta Pusat",
+      "capacity": 5000,
+      "facilities": ["toilet", "medical_tent", "water"],
+      "lat": -6.1701,
+      "lng": 106.8271,
+      "phone": "021-3843822",
+      "status": "active"
+    },
+    {
+      "id": 8,
+      "name": "Taman Menteng",
+      "type": "Park",
+      "address": "Jl. HOS Cokroaminoto, Menteng, Jakarta Pusat",
+      "capacity": 2000,
+      "facilities": ["toilet", "water"],
+      "lat": -6.1977,
+      "lng": 106.8294,
+      "phone": null,
+      "status": "active"
+    }
+  ],
+  "evacuation_routes": [
+    {
+      "id": 1,
+      "name": "Jalur Evakuasi Kelapa Gading - Sunter",
+      "from": "Kelapa Gading",
+      "to": "GOR Sunter",
+      "distance_km": 3.5,
+      "estimated_time_minutes": 15,
+      "route_points": [
+        {"lat": -6.1579, "lng": 106.8991},
+        {"lat": -6.1500, "lng": 106.8850},
+        {"lat": -6.1428, "lng": 106.8701}
+      ],
+      "status": "clear"
+    },
+    {
+      "id": 2,
+      "name": "Jalur Evakuasi Cawang - Ciracas",
+      "from": "Cawang",
+      "to": "GOR Ciracas",
+      "distance_km": 5.2,
+      "estimated_time_minutes": 20,
+      "route_points": [
+        {"lat": -6.2417, "lng": 106.8580},
+        {"lat": -6.2800, "lng": 106.8670},
+        {"lat": -6.3247, "lng": 106.8753}
+      ],
+      "status": "clear"
+    }
+  ],
+  "disaster_prone_areas": [
+    {
+      "id": 1,
+      "name": "Kampung Melayu",
+      "district": "Jakarta Timur",
+      "hazard_type": "banjir",
+      "risk_level": "high",
+      "lat": -6.2346,
+      "lng": 106.8576,
+      "description": "Daerah rawan banjir saat musim hujan dengan ketinggian air bisa mencapai 2 meter"
+    },
+    {
+      "id": 2,
+      "name": "Kelapa Gading",
+      "district": "Jakarta Utara",
+      "hazard_type": "banjir",
+      "risk_level": "medium",
+      "lat": -6.1579,
+      "lng": 106.8991,
+      "description": "Rawan genangan saat hujan deras"
+    },
+    {
+      "id": 3,
+      "name": "Pluit",
+      "district": "Jakarta Utara",
+      "hazard_type": "banjir",
+      "risk_level": "high",
+      "lat": -6.1270,
+      "lng": 106.7914,
+      "description": "Daerah pesisir rawan banjir rob dan air pasang"
+    },
+    {
+      "id": 4,
+      "name": "Cengkareng",
+      "district": "Jakarta Barat",
+      "hazard_type": "banjir",
+      "risk_level": "high",
+      "lat": -6.1468,
+      "lng": 106.7368,
+      "description": "Rawan banjir kiriman dari Kali Angke"
+    }
+  ],
+  "early_warning_system": {
+    "flood_warning_levels": [
+      {
+        "level": 1,
+        "name": "Siaga IV (Normal)",
+        "color": "green",
+        "water_level_cm": "0-150",
+        "action": "Monitoring rutin"
+      },
+      {
+        "level": 2,
+        "name": "Siaga III (Waspada)",
+        "color": "yellow",
+        "water_level_cm": "150-250",
+        "action": "Peningkatan monitoring, persiapan evakuasi"
+      },
+      {
+        "level": 3,
+        "name": "Siaga II (Siaga)",
+        "color": "orange",
+        "water_level_cm": "250-350",
+        "action": "Evakuasi dini, aktivasi posko"
+      },
+      {
+        "level": 4,
+        "name": "Siaga I (Awas)",
+        "color": "red",
+        "water_level_cm": ">350",
+        "action": "Evakuasi total, bantuan darurat"
+      }
+    ],
+    "monitoring_stations": [
+      {
+        "id": 1,
+        "name": "Bendung Katulampa",
+        "river": "Ciliwung",
+        "lat": -6.6317,
+        "lng": 106.8408,
+        "current_level": "Normal"
+      },
+      {
+        "id": 2,
+        "name": "Pintu Air Manggarai",
+        "river": "Ciliwung",
+        "lat": -6.2089,
+        "lng": 106.8498,
+        "current_level": "Normal"
+      },
+      {
+        "id": 3,
+        "name": "Kali Pesanggrahan",
+        "river": "Pesanggrahan",
+        "lat": -6.2351,
+        "lng": 106.7458,
+        "current_level": "Waspada"
+      }
+    ]
+  },
+  "disaster_preparedness": {
+    "emergency_kit_items": [
+      "Air minum 3 liter per orang",
+      "Makanan kaleng/instan untuk 3 hari",
+      "Obat-obatan pribadi",
+      "P3K (perban, antiseptik, masker)",
+      "Senter dan baterai cadangan",
+      "Power bank terisi penuh",
+      "Dokumen penting (KTP, KK, surat tanah) dalam plastik waterproof",
+      "Pakaian ganti",
+      "Selimut/sleeping bag",
+      "Uang tunai secukupnya",
+      "Peluit darurat"
+    ],
+    "evacuation_checklist": [
+      "Matikan listrik dan gas",
+      "Kunci pintu dan jendela",
+      "Bawa tas darurat",
+      "Informasikan ke keluarga/tetangga",
+      "Ikuti jalur evakuasi yang ditentukan",
+      "Jangan kembali sebelum ada pengumuman aman",
+      "Hubungi keluarga setelah sampai tempat aman"
+    ]
+  },
+  "resources": [
+    {
+      "name": "Ambulans",
+      "quantity": 25,
+      "status": "available"
+    },
+    {
+      "name": "Perahu Karet",
+      "quantity": 50,
+      "status": "available"
+    },
+    {
+      "name": "Tenda Darurat",
+      "quantity": 200,
+      "status": "available"
+    },
+    {
+      "name": "Generator",
+      "quantity": 30,
+      "status": "available"
+    },
+    {
+      "name": "Dapur Umum",
+      "quantity": 15,
+      "status": "available"
+    }
+  ]
+}

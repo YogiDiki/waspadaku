@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaspadaKu - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-100" x-data="adminApp()">
+    
+    <!-- Login Screen -->
+    <div x-show="!isAuthenticated" class="min-h-screen flex items-center justify-center px-4">
+        <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-red-600">WaspadaKu</h1>
+                <p class="text-gray-600 mt-2">Admin Dashboard</p>
+            </div>
+            
+            <form @submit.prevent="login()">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Email</label>
+                        <input type="email" 
+                               x-model="loginForm.email" 
+                               class="w-full border rounded-lg px-4 py-2"
+                               placeholder="admin@waspadaku.id"
+                               required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Password</label>
+                        <input type="password" 
+                               x-model="loginForm.password" 
+                               class="w-full border rounded-lg px-4 py-2"
+                               placeholder="••••••••"
+                               required>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition">
+                        🔐 Login
+                    </button>
+                </div>
+            </form>
+            
+            <p class="text-xs text-gray-500 mt-4 text-center">
+                Demo: admin@waspadaku.id / admin123
+            </p>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div x-show="isAuthenticated" x-cloak>
+        
+        <!-- Header -->
+        <header class="bg-red-600 text-white shadow-lg">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <h1 class="text-2xl font-bold">WaspadaKu Admin</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm">👤 <span x-text="currentUser.email"></span></span>
+                        <button @click="logout()" 
+                                class="bg-white text-red-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="bg-white shadow-md">
+            <div class="container mx-auto px-4">
+                <div class="flex overflow-x-auto space-x-2 py-3">
+                    <button @click="currentTab = 'broadcast'" 
+                            :class="currentTab === 'broadcast' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'"
+                            class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                        📢 Broadcast Notifikasi
+                    </button>
+                    <button @click="currentTab = 'reports'" 
+                            :class="currentTab === 'reports' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'"
+                            class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                        📝 Laporan Warga
+                    </button>
+                    <button @click="currentTab = 'evacuation'" 
+                            :class="currentTab === 'evacuation' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'"
+                            class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                        🏥 Titik Evakuasi
+                    </button>
+                    <button @click="currentTab = 'statistics'" 
+                            :class="currentTab === 'statistics' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'"
+                            class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                        📊 Statistik
+                    </button>
+                    <button @click="currentTab = 'users'" 
+                            :class="currentTab === 'users' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'"
+                            class="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">
+                        👥 User Management
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-6">
+            
+            <!-- Broadcast Tab -->
+            <div x-show="currentTab === 'broadcast'">
+                <h2 class="text-2xl font-bold mb-6">Broadcast Notifikasi Push</h2>
+                
+                <div class="bg-white rounded-lg shadow p-6">
+                    <form @submit.prevent="sendBroadcast()">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Jenis Bencana</label>
+                                <select x-model="broadcastForm.hazard" class="w-full border rounded-lg px-4 py-2">
+                                    <option value="banjir">🌊 Banjir</option>
+                                    <option value="gempa">🌍 Gempa</option>
+                                    <option value="longsor">⛰️ Longsor</option>
+                                    <option value="karhutla">🔥 Kebakaran Hutan</option>
+                                    <option value="general">📢 Umum</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Judul Notifikasi</label>
+                                <input type="text" 
+                                       x-model="broadcastForm.title" 
+                                       class="w-full border rounded-lg px-4 py-2"
+                                       placeholder="Contoh: Peringatan Banjir Jakarta Utara"
+                                       required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Isi Pesan</label>
+                                <textarea x-model="broadcastForm.body" 
+                                          class="w-full border rounded-lg px-4 py-2" 
+                                          rows="4"
+                                          placeholder="Jelaskan detail peringatan..."
+                                          required></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Lokasi</label>
+                                <input type="text" 
+                                       x-model="broadcastForm.location" 
+                                       class="w-full border rounded-lg px-4 py-2"
+                                       placeholder="Contoh: Jakarta Utara, Kelapa Gading">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2">Prioritas</label>
+                                    <select x-model="broadcastForm.priority" class="w-full border rounded-lg px-4 py-2">
+                                        <option value="low">Rendah</option>
+                                        <option value="medium">Sedang</option>
+                                        <option value="high">Tinggi</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2">Status Darurat</label>
+                                    <select x-model="broadcastForm.emergency" class="w-full border rounded-lg px-4 py-2">
+                                        <option value="false">Normal</option>
+                                        <option value="true">Darurat</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="flex space-x-3">
+                                <button type="submit" 
+                                        class="flex-1 bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition">
+                                    📤 Kirim Broadcast
+                                </button>
+                                <button type="button" 
+                                        @click="testBroadcast()"
+                                        class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                                    🧪 Test (ke saya saja)
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Broadcast History -->
+                <div class="mt-6 bg-white rounded-lg shadow p-6">
+                    <h3 class="font-bold text-lg mb-4">Riwayat Broadcast</h3>
+                    <div class="space-y-3">
+                        <template x-for="broadcast in broadcastHistory" :key="broadcast.id">
+                            <div class="border-l-4 border-red-600 pl-4 py-2">
+                                <h4 class="font-bold" x-text="broadcast.title"></h4>
+                                <p class="text-sm text-gray-600" x-text="broadcast.body"></p>
+                                <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                                    <span x-text="broadcast.time"></span>
+                                    <span>👥 <span x-text="broadcast.recipients"></span> penerima</span>
+                                    <span :class="broadcast.status === 'sent' ? 'text-green-600' : 'text-yellow-600'" 
+                                          x-text="broadcast.status === 'sent' ? '✓ Terkirim' : '⏳ Pending'"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div x-show="currentTab === 'reports'">
+                <h2 class="text-2xl font-bold mb-6">Laporan dari Warga</h2>
+                
+                <!-- Filter -->
+                <div class="bg-white rounded-lg shadow p-4 mb-4">
+                    <div class="flex space-x-3">
+                        <select x-model="reportFilter" class="border rounded-lg px-4 py-2">
+                            <option value="all">Semua Laporan</option>
+                            <option value="banjir">Banjir</option>
+                            <option value="gempa">Gempa</option>
+                            <option value="longsor">Longsor</option>
+                            <option value="karhutla">Karhutla</option>
+                        </select>
+                        <button @click="loadReports()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reports List -->
+                <div class="space-y-4">
+                    <template x-for="report in filteredReports" :key="report.id">
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                                              :class="getHazardClass(report.hazard)"
+                                              x-text="report.hazard.toUpperCase()"></span>
+                                        <span :class="report.verified ? 'text-green-600' : 'text-yellow-600'" 
+                                              class="text-xs font-semibold">
+                                            <span x-text="report.verified ? '✓ Terverifikasi' : '⏳ Pending'"></span>
+                                        </span>
+                                    </div>
+                                    <p class="text-gray-700 mb-2" x-text="report.description"></p>
+                                    <div class="text-sm text-gray-500">
+                                        <span>📍 <span x-text="report.location || 'Lokasi tidak diketahui'"></span></span>
+                                        <span class="ml-4">🕐 <span x-text="report.time"></span></span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col space-y-2 ml-4">
+                                    <button @click="verifyReport(report.id)" 
+                                            x-show="!report.verified"
+                                            class="bg-green-600 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-green-700">
+                                        ✓ Verifikasi
+                                    </button>
+                                    <button @click="deleteReport(report.id)" 
+                                            class="bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-red-700">
+                                        🗑️ Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Evacuation Tab -->
+            <div x-show="currentTab === 'evacuation'">
+                <h2 class="text-2xl font-bold mb-6">Manajemen Titik Evakuasi</h2>
+                
+                <!-- Add New Evacuation Point -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h3 class="font-bold text-lg mb-4">Tambah Titik Evakuasi Baru</h3>
+                    <form @submit.prevent="addEvacPoint()">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Nama Lokasi</label>
+                                <input type="text" 
+                                       x-model="evacForm.name" 
+                                       class="w-full border rounded-lg px-4 py-2"
+                                       required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Tipe</label>
+                                <select x-model="evacForm.type" class="w-full border rounded-lg px-4 py-2">
+                                    <option value="Sport Hall">Sport Hall</option>
+                                    <option value="Community Center">Community Center</option>
+                                    <option value="BPBD Post">Posko BPBD</option>
+                                    <option value="School">Sekolah</option>
+                                    <option value="Government Building">Gedung Pemerintah</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-semibold mb-2">Alamat</label>
+                                <input type="text" 
+                                       x-model="evacForm.address" 
+                                       class="w-full border rounded-lg px-4 py-2"
+                                       required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Latitude</label>
+                                <input type="number" 
+                                       step="0.0001"
+                                       x-model="evacForm.lat" 
+                                       class="w-full border rounded-lg px-4 py-2"
+                                       required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Longitude</label>
+                                <input type="number" 
+                                       step="0.0001"
+                                       x-model="evacForm.lng" 
+                                       class="w-full border rounded-lg px-4 py-2"
+                                       required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Kapasitas (orang)</label>
+                                <input type="number" 
+                                       x-model="evacForm.capacity" 
+                                       class="w-full border rounded-lg px-4 py-2"
+                                       required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-2">Telepon</label>
+                                <input type="tel" 
+                                       x-model="evacForm.phone" 
+                                       class="w-full border rounded-lg px-4 py-2">
+                            </div>
+                        </div>
+                        <button type="submit" 
+                                class="mt-4 w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700">
+                            ➕ Tambah Titik Evakuasi
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Evacuation Points List -->
+                <div class="space-y-4">
+                    <template x-for="point in evacPoints" :key="point.id">
+                        <div class="bg-white rounded-lg shadow p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-lg" x-text="point.name"></h3>
+                                    <p class="text-sm text-gray-600" x-text="point.address"></p>
+                                    <div class="flex items-center space-x-4 mt-2 text-sm">
+                                        <span>📞 <span x-text="point.phone"></span></span>
+                                        <span>👥 Kapasitas: <span x-text="point.capacity"></span></span>
+                                    </div>
+                                </div>
+                                <button @click="deleteEvacPoint(point.id)" 
+                                        class="bg-red-600 text-white px-3 py-1 rounded text-xs">
+                                    🗑️ Hapus
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div x-show="currentTab === 'statistics'">
+                <h2 class="text-2xl font-bold mb-6">Statistik & Analitik</h2>
+                
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="text-3xl font-bold text-blue-600" x-text="stats.totalReports"></div>
+                        <div class="text-sm text-gray-600">Total Laporan</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="text-3xl font-bold text-green-600" x-text="stats.verifiedReports"></div>
+                        <div class="text-sm text-gray-600">Terverifikasi</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="text-3xl font-bold text-red-600" x-text="stats.activeUsers"></div>
+                        <div class="text-sm text-gray-600">User Aktif</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="text-3xl font-bold text-purple-600" x-text="stats.evacPoints"></div>
+                        <div class="text-sm text-gray-600">Titik Evakuasi</div>
+                    </div>
+                </div>
+
+                <!-- Charts would go here -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="font-bold text-lg mb-4">Laporan per Jenis Bencana</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span>🌊 Banjir</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-64 bg-gray-200 rounded-full h-4">
+                                    <div class="bg-blue-600 h-4 rounded-full" :style="`width: ${(stats.banjir / stats.totalReports * 100)}%`"></div>
+                                </div>
+                                <span class="font-bold" x-text="stats.banjir"></span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>🌍 Gempa</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-64 bg-gray-200 rounded-full h-4">
+                                    <div class="bg-red-600 h-4 rounded-full" :style="`width: ${(stats.gempa / stats.totalReports * 100)}%`"></div>
+                                </div>
+                                <span class="font-bold" x-text="stats.gempa"></span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>⛰️ Longsor</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-64 bg-gray-200 rounded-full h-4">
+                                    <div class="bg-orange-600 h-4 rounded-full" :style="`width: ${(stats.longsor / stats.totalReports * 100)}%`"></div>
+                                </div>
+                                <span class="font-bold" x-text="stats.longsor"></span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>🔥 Karhutla</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-64 bg-gray-200 rounded-full h-4">
+                                    <div class="bg-yellow-600 h-4 rounded-full" :style="`width: ${(stats.karhutla / stats.totalReports * 100)}%`"></div>
+                                </div>
+                                <span class="font-bold" x-text="stats.karhutla"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div x-show="currentTab === 'users'">
+                <h2 class="text-2xl font-bold mb-6">User Management</h2>
+                
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">User ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">FCM Token</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Registered</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <template x-for="user in users" :key="user.id">
+                                <tr>
+                                    <td class="px-6 py-4 text-sm" x-text="user.id"></td>
+                                    <td class="px-6 py-4 text-sm text-gray-500">
+                                        <span x-text="user.fcm_token.substring(0, 20) + '...'"></span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm" x-text="user.registered"></td>
+                                    <td class="px-6 py-4">
+                                        <span :class="user.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'" 
+                                              class="px-2 py-1 rounded text-xs font-semibold">
+                                            <span x-text="user.active ? 'Active' : 'Inactive'"></span>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <button @click="deleteUser(user.id)" 
+                                                class="text-red-600 hover:text-red-800 text-sm">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/admin/js/admin.js"></script>
+</body>
+</html>
