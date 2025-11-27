@@ -499,29 +499,48 @@ function waspadaApp() {
       }
     },
 
-    // IndexedDB operations
-    async saveToIndexedDB(storeName, data) {
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open('WaspadakuDB', 1);
-        
-        request.onsuccess = () => {
-          const db = request.result;
-          const tx = db.transaction(storeName, 'readwrite');
-          const store = tx.objectStore(storeName);
-          
-          if (Array.isArray(data)) {
-            data.forEach(item => store.put(item));
-          } else {
-            store.put(data);
-          }
-          
-          tx.oncomplete = () => resolve();
-          tx.onerror = () => reject(tx.error);
-        };
-        
-        request.onerror = () => reject(request.error);
+   async saveToIndexedDB(storeName, data) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('WaspadakuDB', 1);
+    
+    request.onsuccess = () => {
+      const db = request.result;
+      
+      // TAMBAHKAN CEK INI:
+      if (!db.objectStoreNames.contains(storeName)) {
+        console.warn('Store not found:', storeName);
+        resolve();
+        return;
+      }
+      
+      const tx = db.transaction(storeName, 'readwrite');
+      const store = tx.objectStore(storeName);
+      
+      if (Array.isArray(data)) {
+        data.forEach(item => store.put(item));
+      } else {
+        store.put(data);
+      }
+      
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    };
+    
+    request.onerror = () => reject(request.error);
+    
+    // TAMBAHKAN onupgradeneeded:
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      
+      const stores = ['pendingStatus', 'pendingReports', 'disasters', 'evacPoints'];
+      stores.forEach(name => {
+        if (!db.objectStoreNames.contains(name)) {
+          db.createObjectStore(name, { keyPath: 'id', autoIncrement: true });
+        }
       });
-    },
+    };
+  });
+},
 
     async getFromIndexedDB(storeName) {
       return new Promise((resolve, reject) => {

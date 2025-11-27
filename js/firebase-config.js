@@ -1,10 +1,8 @@
 // Firebase Configuration for FCM (Push Notifications)
-
-// Import Firebase SDK
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+// Note: This file is for the main app, NOT service worker
 
 // Firebase configuration
+// GANTI dengan konfigurasi Firebase Anda dari Firebase Console
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCOQQNNIJYlsR5LLNoVUw6S6trfQ4YhNjY",
