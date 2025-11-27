@@ -499,39 +499,15 @@ function waspadaApp() {
       }
     },
 
-   async saveToIndexedDB(storeName, data) {
+ // IndexedDB operations
+async saveToIndexedDB(storeName, data) {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('WaspadakuDB', 1);
     
-    request.onsuccess = () => {
-      const db = request.result;
-      
-      // TAMBAHKAN CEK INI:
-      if (!db.objectStoreNames.contains(storeName)) {
-        console.warn('Store not found:', storeName);
-        resolve();
-        return;
-      }
-      
-      const tx = db.transaction(storeName, 'readwrite');
-      const store = tx.objectStore(storeName);
-      
-      if (Array.isArray(data)) {
-        data.forEach(item => store.put(item));
-      } else {
-        store.put(data);
-      }
-      
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    };
-    
-    request.onerror = () => reject(request.error);
-    
-    // TAMBAHKAN onupgradeneeded:
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
       
+      // Create all stores if they don't exist
       const stores = ['pendingStatus', 'pendingReports', 'disasters', 'evacPoints'];
       stores.forEach(name => {
         if (!db.objectStoreNames.contains(name)) {
@@ -539,25 +515,87 @@ function waspadaApp() {
         }
       });
     };
+    
+    request.onsuccess = () => {
+      const db = request.result;
+      
+      // Check if store exists
+      if (!db.objectStoreNames.contains(storeName)) {
+        console.warn('Store not found:', storeName);
+        resolve();
+        return;
+      }
+      
+      try {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        
+        if (Array.isArray(data)) {
+          data.forEach(item => store.put(item));
+        } else {
+          store.put(data);
+        }
+        
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => {
+          console.error('Transaction error:', tx.error);
+          resolve(); // Don't reject, just resolve
+        };
+      } catch (error) {
+        console.error('IndexedDB error:', error);
+        resolve(); // Don't reject
+      }
+    };
+    
+    request.onerror = () => {
+      console.error('IndexedDB open error:', request.error);
+      resolve(); // Don't reject, just resolve
+    };
   });
 },
 
-    async getFromIndexedDB(storeName) {
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open('WaspadakuDB', 1);
-        
-        request.onsuccess = () => {
-          const db = request.result;
-          const tx = db.transaction(storeName, 'readonly');
-          const store = tx.objectStore(storeName);
-          const getAllRequest = store.getAll();
-          
-          getAllRequest.onsuccess = () => resolve(getAllRequest.result);
-          getAllRequest.onerror = () => reject(getAllRequest.error);
-        };
-        
-        request.onerror = () => reject(request.error);
+async getFromIndexedDB(storeName) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('WaspadakuDB', 1);
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      const stores = ['pendingStatus', 'pendingReports', 'disasters', 'evacPoints'];
+      stores.forEach(name => {
+        if (!db.objectStoreNames.contains(name)) {
+          db.createObjectStore(name, { keyPath: 'id', autoIncrement: true });
+        }
       });
-    }
-  };
-}
+    };
+    
+    request.onsuccess = () => {
+      const db = request.result;
+      
+      if (!db.objectStoreNames.contains(storeName)) {
+        console.warn('Store not found:', storeName);
+        resolve([]);
+        return;
+      }
+      
+      try {
+        const tx = db.transaction(storeName, 'readonly');
+        const store = tx.objectStore(storeName);
+        const getAllRequest = store.getAll();
+        
+        getAllRequest.onsuccess = () => resolve(getAllRequest.result || []);
+        getAllRequest.onerror = () => {
+          console.error('Get error:', getAllRequest.error);
+          resolve([]);
+        };
+      } catch (error) {
+        console.error('IndexedDB get error:', error);
+        resolve([]);
+      }
+    };
+    
+    request.onerror = () => {
+      console.error('IndexedDB open error:', request.error);
+      resolve([]);
+    };
+  });
+},
